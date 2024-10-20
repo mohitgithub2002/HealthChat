@@ -1,9 +1,11 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Send, User, Settings, LogOut, Heart, Stethoscope, Pill, Menu } from 'lucide-react';
+import { Send, User, Settings, LogOut, Heart, Stethoscope, Pill, Menu, Thermometer, Brain, Lungs, Activity, Moon } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Logo from './Logo';
+import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 const fetchChatHistory = async (threadId) => {
   try {
@@ -53,12 +55,13 @@ export default function ChatInterface({ initialThreadId }) {
   const [chatStarted, setChatStarted] = useState(!!initialThreadId);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { data: session } = useSession();
 
   const suggestions = [
-    "What are the symptoms of the flu?",
-    "How can I manage my stress levels?",
-    "What's a balanced diet for heart health?",
-    "How much sleep should I be getting?"
+    { text: "What are the symptoms of the flu?", icon: <Thermometer className="w-5 h-5 mr-2" /> },
+    { text: "How can I manage my stress levels?", icon: <Brain className="w-5 h-5 mr-2" /> },
+    { text: "What's a balanced diet for heart health?", icon: <Heart className="w-5 h-5 mr-2" /> },
+    { text: "How much sleep should I be getting?", icon: <Moon className="w-5 h-5 mr-2" /> }
   ];
 
   const loadChatHistory = useCallback(async (threadId) => {
@@ -79,6 +82,7 @@ export default function ChatInterface({ initialThreadId }) {
     } else {
       router.push('/chat');
     }
+    console.log("session data ", session);
   }, [currentChat.threadId, router, loadChatHistory]);
 
   const handleSend = async () => {
@@ -101,7 +105,7 @@ export default function ChatInterface({ initialThreadId }) {
           setChatStarted(true);
           const newConversation = { id: newThreadId, title: input, threadId: newThreadId };
           setCurrentChat(newConversation);
-          router.replace(`/chat/${newThreadId}`);
+          router.push(`/chat/${newThreadId}`, undefined, { shallow: true });
         }
 
         const aiResponse = { id: Date.now().toString(), content: response, sender: "ai" };
@@ -114,54 +118,29 @@ export default function ChatInterface({ initialThreadId }) {
     }
   };
 
-  const startNewChat = async () => {
-    setMessages([]);
-    setCurrentChat({ title: "New Consultation", threadId: null });
-    setChatStarted(false);
-    setIsMobileMenuOpen(false);
-    router.push('/chat');
-  };
-
-  const switchChat = async (chat) => {
-    setCurrentChat(chat);
-    setChatStarted(true);
-    await loadChatHistory(chat.threadId);
-    setIsMobileMenuOpen(false);
-    router.push(`/chat/${chat.threadId}`);
-  };
-
   return (
-    <>
-      {/* Navbar */}
-      <div className="bg-white shadow-md p-4 flex justify-between items-center w-full text-black">
-        <div className="flex items-center">
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden mr-2 p-2 rounded-lg hover:bg-gray-100"
-          >
-            <Menu className="h-6 w-6" />
-            <span className="sr-only">Toggle menu</span>
-          </button>
-          <div className="flex items-center md:hidden">
-            <Logo className="h-6 w-6 text-teal-600 mr-2" />
-            <span className="text-xl font-semibold text-teal-900">HealthChat</span>
-          </div>
-          <div className="hidden md:flex items-center">
-            <Stethoscope className="h-6 w-6 text-teal-600 mr-2" />
-            <h2 className="text-xl font-semibold text-teal-900">{currentChat.title}</h2>
-          </div>
-        </div>
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
+      {/* Profile Icon */}
+      <motion.div 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="p-4 flex justify-end items-center w-full text-black"
+      >
         <div className="relative">
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
+            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
           >
-            JD
+            {session?.user?.image ? (
+              <img src={session.user.image} alt={session.user.name} className="w-full h-full object-cover" />
+            ) : (
+              session?.user?.name?.charAt(0) || 'U'
+            )}
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-              <p className="px-4 py-2 text-sm text-gray-700 font-medium">My Health Profile</p>
+              <p className="px-4 py-2 text-md font-bold text-teal-700">{session?.user?.name || 'My Health Profile'}</p>
               <hr />
               <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                 <User className="mr-2 h-4 w-4" />
@@ -187,35 +166,68 @@ export default function ChatInterface({ initialThreadId }) {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Chat Messages */}
       <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto space-y-6">
           {!chatStarted ? (
-            <div className="text-center">
-              <h3 className="text-2xl font-semibold text-teal-800 mb-4">Welcome to Your Medical Assistant</h3>
-              <p className="text-teal-600 mb-6">How can I assist you with your health today? Here are some suggestions:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="bg-white rounded-2xl shadow-xl p-8 border border-teal-100"
+            >
+              <motion.div
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <h3 className="text-3xl font-bold text-teal-800 mb-2">Welcome to HealthChat</h3>
+                <p className="text-teal-600 mb-6">Your personal AI medical assistant. How can we help you today?</p>
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
                 {suggestions.map((suggestion, index) => (
-                  <button 
-                    key={index} 
-                    className="text-left text-teal-700 hover:bg-teal-50 border border-teal-200 rounded-lg p-3"
+                  <motion.button 
+                    key={index}
+                    whileHover={{ scale: 1.03, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)" }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center text-left text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-xl p-4 transition duration-300 ease-in-out"
                     onClick={() => {
-                      setInput(suggestion);
+                      setInput(suggestion.text);
                       handleSend();
                     }}
                   >
-                    {suggestion}
-                  </button>
+                    {suggestion.icon}
+                    <span>{suggestion.text}</span>
+                  </motion.button>
                 ))}
-              </div>
-            </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="mt-8 text-center"
+              >
+                <p className="text-teal-600 mb-4">Or type your own question below to get started</p>
+                <Activity className="w-6 h-6 text-teal-500 mx-auto animate-pulse" />
+              </motion.div>
+            </motion.div>
           ) : (
-            messages.map((message) => (
-              <div
+            messages.map((message, index) => (
+              <motion.div
                 key={message.id}
-                className={`flex items-start mb-4 ${
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className={`flex items-start ${
                   message.sender === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
@@ -256,18 +268,27 @@ export default function ChatInterface({ initialThreadId }) {
                   )}
                 </div>
                 {message.sender === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white ml-3">
-                    You
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white ml-3 overflow-hidden">
+                    {session?.user?.image ? (
+                      <img src={session.user.image} alt={session.user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      session?.user?.name?.charAt(0) || 'U'
+                    )}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))
           )}
         </div>
       </div>
 
       {/* Input Area */}
-      <div className="p-4 md:p-6 bg-transparent shadow-lg">
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="p-4 md:p-6 bg-transparent shadow-lg"
+      >
         <div className="max-w-3xl mx-auto flex items-center">
           <input
             type="text"
@@ -275,16 +296,18 @@ export default function ChatInterface({ initialThreadId }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            className="flex-1 mr-4 text-black bg-blue-50 border border-teal-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="flex-1 mr-4 text-black bg-blue-50 border border-teal-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition duration-300 ease-in-out"
           />
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleSend}
-            className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+            className="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out"
           >
             <Send className="h-5 w-5" />
-          </button>
+          </motion.button>
         </div>
-      </div>
-    </>
+      </motion.div>
+    </div>
   );
 }

@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {HarmCategory, HarmBlockThreshold, GoogleGenerativeAI } from "@google/generative-ai";
 import dbConnect from "@/utils/dbConnect";
 import { Message, Conversation } from "@/models/DatabaseModels";
 import { NextResponse } from 'next/server';
-
+import { systemPrompt } from "./promptdata";
 export async function POST(request) {
   try {
     let { prompt, threadId } = await request.json();
@@ -13,7 +13,7 @@ export async function POST(request) {
 
     // Connect to MongoDB
     await dbConnect();
-
+    
     // Check if threadId is empty, create a new conversation if it is
     if (!threadId) {
       console.log("Creating new conversation");
@@ -25,10 +25,37 @@ export async function POST(request) {
       console.log("Creating new conversation with threadId:", threadId);
     }
     console.log("ThreadId:", threadId);
+    const previousMessage = await Message.find({ threadId }).sort({ createdAt: -1 }).limit(10);
+    const reversedPreviousMessage = previousMessage.reverse();
+    // convert the array into strings and join them
+    const previousChat = reversedPreviousMessage.map((message) => `${message.role}: ${message.content}`).join('\n');
+    
+    const promptTemplate = `System: ${systemPrompt}
+                            Previouschat: ${previousChat}
+                            User-Query: ${prompt}
+                            `;
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const result = await model.generateContent(prompt);
+    const safetySettings = [
+      {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE	,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE	,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE	,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE	,
+      },
+    ];
+    const model = genAI.getGenerativeModel({ model: "tunedModels/medichat-8ad5om60ruoi",safetySettings: safetySettings,  });
+    console.log("Previous chat:", promptTemplate);
+    const result = await model.generateContent(promptTemplate);
     const response = result.response;
     const aiMessage = response.text();
 
