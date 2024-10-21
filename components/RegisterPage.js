@@ -35,12 +35,12 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-100 to-blue-100">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-100 to-blue-100 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-sm p-6 space-y-6 bg-white rounded-2xl shadow-xl">
         <div className="flex justify-center">
-          <Logo className="w-20 h-20 transition-transform duration-300 ease-in-out transform hover:scale-110 text-teal-600" />
+          <Logo className="w-16 h-16 sm:w-20 sm:h-20 transition-transform duration-300 ease-in-out transform hover:scale-110 text-teal-600" />
         </div>
-        <h2 className="mt-4 text-3xl font-bold text-center text-gray-900">
+        <h2 className="mt-4 text-2xl sm:text-3xl font-bold text-center text-gray-900">
           Create your account
         </h2>
         {error && <p className="text-red-500 text-center text-sm">{error}</p>}
@@ -146,7 +146,7 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        <div className="text-xs text-center">
+        <div className="text-xs sm:text-sm text-center">
           <button
             className="font-medium text-teal-600 hover:text-teal-500 transition duration-300 ease-in-out"
             onClick={() => signIn(undefined, { callbackUrl: '/chat' })}

@@ -53,8 +53,6 @@ export default function ChatInterface({ initialThreadId }) {
   const [messages, setMessages] = useState([]);
   const [currentChat, setCurrentChat] = useState({ title: "New Consultation", threadId: initialThreadId });
   const [chatStarted, setChatStarted] = useState(!!initialThreadId);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { data: session } = useSession();
 
   const suggestions = [
@@ -118,55 +116,7 @@ export default function ChatInterface({ initialThreadId }) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-green-50">
-      {/* Profile Icon */}
-      <motion.div 
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="p-4 flex justify-end items-center w-full text-black"
-      >
-        <div className="relative">
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
-          >
-            {session?.user?.image ? (
-              <img src={session.user.image} alt={session.user.name} className="w-full h-full object-cover" />
-            ) : (
-              session?.user?.name?.charAt(0) || 'U'
-            )}
-          </button>
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-              <p className="px-4 py-2 text-md font-bold text-teal-700">{session?.user?.name || 'My Health Profile'}</p>
-              <hr />
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                <span>Personal Info</span>
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <Heart className="mr-2 h-4 w-4" />
-                <span>Health Records</span>
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <Pill className="mr-2 h-4 w-4" />
-                <span>Medications</span>
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </button>
-              <hr />
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
+    <div className="flex flex-col h-full">
       {/* Chat Messages */}
       <div className="flex-1 p-4 md:p-6 overflow-y-auto">
         <div className="max-w-3xl mx-auto space-y-6">
@@ -281,13 +231,8 @@ export default function ChatInterface({ initialThreadId }) {
         </div>
       </div>
 
-      {/* Input Area */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="p-4 md:p-6 bg-transparent shadow-lg"
-      >
+      {/* Input Area - Moved outside the scrollable area */}
+      <div className="p-4 md:p-6 bg-transparent">
         <div className="max-w-3xl mx-auto flex items-center">
           <input
             type="text"
@@ -306,7 +251,7 @@ export default function ChatInterface({ initialThreadId }) {
             <Send className="h-5 w-5" />
           </motion.button>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

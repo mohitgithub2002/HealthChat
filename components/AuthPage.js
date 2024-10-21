@@ -24,12 +24,12 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-100 to-blue-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-3xl shadow-2xl">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-teal-100 to-blue-100 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md p-6 sm:p-8 space-y-6 sm:space-y-8 bg-white rounded-3xl shadow-2xl">
         <div className="flex justify-center">
-          <Logo className="w-24 h-24 transition-transform duration-300 ease-in-out transform hover:scale-110 text-teal-600" />
+          <Logo className="w-20 h-20 sm:w-24 sm:h-24 transition-transform duration-300 ease-in-out transform hover:scale-110 text-teal-600" />
         </div>
-        <h2 className="mt-6 text-4xl font-extrabold text-center text-gray-900">
+        <h2 className="mt-6 text-3xl sm:text-4xl font-extrabold text-center text-gray-900">
           Welcome back
         </h2>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
