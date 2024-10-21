@@ -3,8 +3,17 @@ import dbConnect from "@/utils/dbConnect";
 import { Message, Conversation } from "@/models/DatabaseModels";
 import { NextResponse } from 'next/server';
 import { systemPrompt } from "./promptdata";
+import { getServerSession } from "next-auth/next";
+import { authOption } from "../auth/[...nextauth]/route";
+
 export async function POST(request) {
   try {
+    const session = await getServerSession(authOption);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userEmail = session.user.email;
     let { prompt, threadId } = await request.json();
     
     if (!prompt) {
@@ -19,13 +28,13 @@ export async function POST(request) {
       console.log("Creating new conversation");
       const title = prompt.split(' ').slice(0, 5).join(' ');
       console.log("Title:", title);
-      const newConversation = await Conversation.create({ title });
+      const newConversation = await Conversation.create({ title, userEmail });
       console.log("New conversation:", newConversation);
       threadId = newConversation.threadId;
       console.log("Creating new conversation with threadId:", threadId);
     }
     console.log("ThreadId:", threadId);
-    const previousMessage = await Message.find({ threadId }).sort({ createdAt: -1 }).limit(10);
+    const previousMessage = await Message.find({ threadId, userEmail }).sort({ createdAt: -1 }).limit(10);
     const reversedPreviousMessage = previousMessage.reverse();
     // convert the array into strings and join them
     const previousChat = reversedPreviousMessage.map((message) => `${message.role}: ${message.content}`).join('\n');
@@ -38,22 +47,22 @@ export async function POST(request) {
     const safetySettings = [
       {
         category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE	,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_NONE	,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_NONE	,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
       {
         category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE	,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
       },
     ];
-    const model = genAI.getGenerativeModel({ model: "tunedModels/medichat-8ad5om60ruoi",safetySettings: safetySettings,  });
+    const model = genAI.getGenerativeModel({ model: "tunedModels/medichat-8ad5om60ruoi", safetySettings: safetySettings,  });
     console.log("Previous chat:", promptTemplate);
     const result = await model.generateContent(promptTemplate);
     const response = result.response;
@@ -64,12 +73,14 @@ export async function POST(request) {
       threadId,
       content: prompt,
       role: 'user',
+      userEmail,
     });
 
     await Message.create({
       threadId,
       content: aiMessage,
       role: 'assistant',
+      userEmail,
     });
 
     return NextResponse.json({ 

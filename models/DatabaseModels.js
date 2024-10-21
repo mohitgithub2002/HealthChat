@@ -12,6 +12,10 @@ const conversationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  userEmail: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -35,6 +39,10 @@ const messageSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['user', 'assistant'],
+    required: true,
+  },
+  userEmail: {
+    type: String,
     required: true,
   },
   createdAt: {

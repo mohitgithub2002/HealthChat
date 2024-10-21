@@ -65,7 +65,7 @@ export default function ChatInterface({ initialThreadId }) {
   ];
 
   const loadChatHistory = useCallback(async (threadId) => {
-    if (threadId) {
+    if (threadId && session) {
       const history = await fetchChatHistory(threadId);
       setMessages(history.map(msg => ({
         id: msg._id,
@@ -73,20 +73,19 @@ export default function ChatInterface({ initialThreadId }) {
         sender: msg.role === 'user' ? 'user' : 'ai'
       })));
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
-    if (currentChat.threadId) {
+    if (currentChat.threadId && session) {
       loadChatHistory(currentChat.threadId);
       router.push(`/chat/${currentChat.threadId}`);
     } else {
       router.push('/chat');
     }
-    console.log("session data ", session);
-  }, [currentChat.threadId, router, loadChatHistory]);
+  }, [currentChat.threadId, router, loadChatHistory, session]);
 
   const handleSend = async () => {
-    if (input.trim()) {
+    if (input.trim() && session) {
       let threadId = currentChat.threadId;
       const newUserMessage = { id: Date.now().toString(), content: input, sender: "user" };
       setMessages(prev => [...prev, newUserMessage]);
