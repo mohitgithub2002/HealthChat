@@ -4,6 +4,9 @@ import { Conversation } from '@/models/DatabaseModels';
 import { getServerSession } from "next-auth/next";
 import { authOption } from "../auth/[...nextauth]/route";
 
+// Add this line to mark the route as dynamic
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   try {
     const session = await getServerSession(authOption);

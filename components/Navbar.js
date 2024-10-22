@@ -4,6 +4,7 @@ import { User, Settings, LogOut, Heart, Pill, Menu } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import Logo from './Logo';
+import Image from 'next/image';
 
 export default function Navbar({ toggleSidebar }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function Navbar({ toggleSidebar }) {
           className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
         >
           {session?.user?.image ? (
-            <img src={session.user.image} alt={session.user.name} className="w-full h-full object-cover" />
+            <Image src={session.user.image} alt={session.user.name} width={autto} height={auto} className="w-full h-full object-cover" />
           ) : (
             session?.user?.name?.charAt(0) || 'U'
           )}

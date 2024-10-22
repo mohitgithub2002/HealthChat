@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import Logo from './Logo';
 import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 
 const fetchChatHistory = async (threadId) => {
   try {
@@ -219,7 +220,7 @@ export default function ChatInterface({ initialThreadId }) {
                 {message.sender === 'user' && (
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white ml-3 overflow-hidden">
                     {session?.user?.image ? (
-                      <img src={session.user.image} alt={session.user.name} className="w-full h-full object-cover" />
+                      <Image src={session.user.image} alt={session.user.name} width={auto} height={auto} className="w-full h-full object-cover" />
                     ) : (
                       session?.user?.name?.charAt(0) || 'U'
                     )}
