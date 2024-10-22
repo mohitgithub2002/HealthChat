@@ -220,7 +220,7 @@ export default function ChatInterface({ initialThreadId }) {
                 {message.sender === 'user' && (
                   <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white ml-3 overflow-hidden">
                     {session?.user?.image ? (
-                      <Image src={session.user.image} alt={session.user.name} width={auto} height={auto} className="w-full h-full object-cover" />
+                      <Image src={session.user.image} alt={session.user.name} width={50} height={50} className="w-full h-full object-cover" />
                     ) : (
                       session?.user?.name?.charAt(0) || 'U'
                     )}

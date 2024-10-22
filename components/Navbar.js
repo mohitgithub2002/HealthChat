@@ -37,7 +37,7 @@ export default function Navbar({ toggleSidebar }) {
           className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden"
         >
           {session?.user?.image ? (
-            <Image src={session.user.image} alt={session.user.name} width={autto} height={auto} className="w-full h-full object-cover" />
+            <Image src={session.user.image} alt={session.user.name} width={50} height={50} className="w-full h-full object-cover" />
           ) : (
             session?.user?.name?.charAt(0) || 'U'
           )}
